@@ -1,6 +1,14 @@
 'use strict';
 const isObj = require('is-obj');
 
+const disallowedKeys = [
+	'__proto__',
+	'prototype',
+	'constructor'
+];
+
+const isValidPath = pathSegments => !pathSegments.some(segment => disallowedKeys.includes(segment));
+
 function getPathSegments(path) {
 	const pathArr = path.split('.');
 	const parts = [];
@@ -16,6 +24,10 @@ function getPathSegments(path) {
 		parts.push(p);
 	}
 
+	if (!isValidPath(parts)) {
+		return [];
+	}
+
 	return parts;
 }
 
@@ -26,6 +38,9 @@ module.exports = {
 		}
 
 		const pathArr = getPathSegments(path);
+		if (pathArr.length === 0) {
+			return value;
+		}
 
 		for (let i = 0; i < pathArr.length; i++) {
 			if (!Object.prototype.propertyIsEnumerable.call(obj, pathArr[i])) {
@@ -102,6 +117,9 @@ module.exports = {
 		}
 
 		const pathArr = getPathSegments(path);
+		if (pathArr.length === 0) {
+			return false;
+		}
 
 		for (let i = 0; i < pathArr.length; i++) {
 			if (isObj(obj)) {
